@@ -41,21 +41,24 @@ jobs:
       - name: Detect an available iPhone simulator
         id: sim
         run: |
-          DEVICE=$(xcrun simctl list devices available -j | jq -r '
+          UDID=$(xcrun simctl list devices available -j | jq -r '
             .devices | to_entries[]
             | select(.key | contains("iOS"))
             | .value[]
             | select(.name | startswith("iPhone"))
-            | .name' | head -n 1)
-          echo "Using simulator: $DEVICE"
-          echo "device_name=$DEVICE" >> "$GITHUB_OUTPUT"
+            | .udid' | head -n 1)
+          NAME=$(xcrun simctl list devices available -j | jq -r --arg udid "$UDID" '
+            .devices | to_entries[] | .value[] | select(.udid == $udid) | .name')
+          echo "Using simulator: $NAME ($UDID)"
+          xcrun simctl boot "$UDID" || true
+          echo "device_udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Run UI Tests on detected simulator
         run: |
           xcodebuild test \
             -project RecipeApp.xcodeproj \
             -scheme RecipeApp \
-            -destination 'platform=iOS Simulator,name=${{ steps.sim.outputs.device_name }}' \
+            -destination 'platform=iOS Simulator,id=${{ steps.sim.outputs.device_udid }}' \
             -resultBundlePath TestResults.xcresult
 
       - name: Extract screenshots from test results
