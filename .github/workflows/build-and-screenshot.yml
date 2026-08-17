@@ -1,0 +1,60 @@
+name: Build and Screenshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Install xcparse (extracts screenshots from test results)
+        run: brew install chargepoint/xcparse/xcparse
+
+      - name: Download recipe images
+        run: |
+          cd RecipeApp/Assets.xcassets
+          curl -L "https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=600" -o spaghetti.imageset/spaghetti.png
+          curl -L "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600" -o salad.imageset/salad.png
+          curl -L "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600" -o chicken.imageset/chicken.png
+          curl -L "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=600" -o pancakes.imageset/pancakes.png
+          curl -L "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600" -o ramen.imageset/ramen.png
+          curl -L "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600" -o toast.imageset/toast.png
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Show available simulators
+        run: xcrun simctl list devices available | grep iPhone
+
+      - name: Run UI Tests on iPhone 16 simulator
+        run: |
+          xcodebuild test \
+            -project RecipeApp.xcodeproj \
+            -scheme RecipeApp \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Extract screenshots from test results
+        if: always()
+        run: |
+          mkdir -p screenshots
+          xcparse screenshots TestResults.xcresult screenshots/
+
+      - name: Upload screenshots as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: submission-screenshots
+          path: screenshots/
