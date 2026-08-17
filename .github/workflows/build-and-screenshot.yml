@@ -25,12 +25,14 @@ jobs:
       - name: Download recipe images
         run: |
           cd RecipeApp/Assets.xcassets
-          curl -L "https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=600" -o spaghetti.imageset/spaghetti.png
-          curl -L "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600" -o salad.imageset/salad.png
-          curl -L "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600" -o chicken.imageset/chicken.png
-          curl -L "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=600" -o pancakes.imageset/pancakes.png
-          curl -L "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600" -o ramen.imageset/ramen.png
-          curl -L "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600" -o toast.imageset/toast.png
+          curl -fL "https://images.unsplash.com/photo-1588013273468-315fd88ea34c?w=600&fm=png" -o spaghetti.imageset/spaghetti.png
+          curl -fL "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&fm=png" -o salad.imageset/salad.png
+          curl -fL "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&fm=png" -o chicken.imageset/chicken.png
+          curl -fL "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=600&fm=png" -o pancakes.imageset/pancakes.png
+          curl -fL "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&fm=png" -o ramen.imageset/ramen.png
+          curl -fL "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&fm=png" -o toast.imageset/toast.png
+          echo "--- Validando descargas ---"
+          file spaghetti.imageset/spaghetti.png salad.imageset/salad.png chicken.imageset/chicken.png pancakes.imageset/pancakes.png ramen.imageset/ramen.png toast.imageset/toast.png
 
       - name: Generate Xcode project
         run: xcodegen generate
